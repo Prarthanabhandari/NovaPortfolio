@@ -11,7 +11,11 @@ exports.getAllBlogs = async (req, res) => {
     }
 
     const result = await pool.query(queryStr)
-    res.json(result.rows)
+    const formatted = result.rows.map(b => ({
+      ...b,
+      image_url: b.image_url ? `http://localhost:5000${b.image_url}` : null
+    }))
+    res.json(formatted)
   } catch (err) {
     console.error('Error fetching blogs:', err.message)
     res.status(500).json({ error: 'Server error fetching blogs' })
@@ -28,7 +32,12 @@ exports.getBlogById = async (req, res) => {
       return res.status(404).json({ error: 'Blog post not found' })
     }
 
-    res.json(result.rows[0])
+    const blog = result.rows[0]
+    const formatted = {
+      ...blog,
+      image_url: blog.image_url ? `http://localhost:5000${blog.image_url}` : null
+    }
+    res.json(formatted)
   } catch (err) {
     console.error('Error fetching blog:', err.message)
     res.status(500).json({ error: 'Server error fetching blog post' })
@@ -68,7 +77,12 @@ exports.createBlog = async (req, res) => {
     ]
 
     const result = await pool.query(queryStr, values)
-    res.status(201).json(result.rows[0])
+    const blog = result.rows[0]
+    const formatted = {
+      ...blog,
+      image_url: blog.image_url ? `http://localhost:5000${blog.image_url}` : null
+    }
+    res.status(201).json(formatted)
   } catch (err) {
     console.error('Error creating blog:', err.message)
     res.status(500).json({ error: 'Server error creating blog post' })
@@ -118,7 +132,12 @@ exports.updateBlog = async (req, res) => {
     ]
 
     const result = await pool.query(queryStr, values)
-    res.json(result.rows[0])
+    const blog = result.rows[0]
+    const formatted = {
+      ...blog,
+      image_url: blog.image_url ? `http://localhost:5000${blog.image_url}` : null
+    }
+    res.json(formatted)
   } catch (err) {
     console.error('Error updating blog:', err.message)
     res.status(500).json({ error: 'Server error updating blog post' })
