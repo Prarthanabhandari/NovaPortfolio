@@ -105,23 +105,6 @@ const Navbar = () => {
             </button>
           ))}
 
-          {/* Theme Toggle */}
-          <button onClick={toggleTheme} style={{
-            display: 'flex', alignItems: 'center', gap: '0.5rem',
-            background: theme === 'professional'
-              ? 'linear-gradient(135deg, #e0e7ff, #ddd6fe)'
-              : 'linear-gradient(135deg, #fce7f3, #ede9fe)',
-            border: 'none', borderRadius: '2rem',
-            padding: '0.4rem 1rem', cursor: 'pointer',
-            fontSize: '0.85rem', fontWeight: 600,
-            color: theme === 'professional' ? '#4338ca' : '#9333ea',
-            transition: 'all 0.3s'
-          }}>
-            {theme === 'professional'
-              ? <><FiSun size={14} /> Professional</>
-              : <><FiMoon size={14} /> Creative</>
-            }
-          </button>
         </div>
 
         {/* Mobile Menu Button */}
@@ -160,13 +143,6 @@ const Navbar = () => {
               {link.name}
             </button>
           ))}
-          <button onClick={toggleTheme} style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: '1rem', fontWeight: 600, textAlign: 'left',
-            color: theme === 'professional' ? '#4338ca' : '#9333ea',
-          }}>
-            Switch to {theme === 'professional' ? 'Creative' : 'Professional'} Mode
-          </button>
         </div>
       )}
     </nav>

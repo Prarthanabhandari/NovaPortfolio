@@ -10,11 +10,11 @@ import AchievementsPage from './pages/AchievementsPage'
 import BlogsPage from './pages/BlogsPage'
 import BlogDetailPage from './pages/BlogDetailPage'
 import ScrollToTop from './components/layout/ScrollToTop'
-import Chatbot from './components/ui/Chatbot'
+import ThemeToggleFloating from './components/ui/ThemeToggleFloating'
 
 function App() {
   const location = useLocation()
-  const showChatbot = !location.pathname.startsWith('/admin')
+  const showThemeToggle = !location.pathname.startsWith('/admin')
 
   return (
     <>
@@ -33,7 +33,7 @@ function App() {
         <Route path="/blogs" element={<BlogsPage />} />
         <Route path="/blogs/:id" element={<BlogDetailPage />} />
       </Routes>
-      {showChatbot && <Chatbot />}
+      {showThemeToggle && <ThemeToggleFloating />}
     </>
   )
 }
