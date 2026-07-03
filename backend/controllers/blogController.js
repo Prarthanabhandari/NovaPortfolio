@@ -104,7 +104,9 @@ exports.updateBlog = async (req, res) => {
     const currentBlog = checkExist.rows[0]
     
     let imageUrl = currentBlog.image_url
-    if (req.files && req.files['image']) {
+    if (req.body.delete_image === 'true' || req.body.delete_image === true) {
+      imageUrl = ''
+    } else if (req.files && req.files['image']) {
       imageUrl = `/uploads/${req.files['image'][0].filename}`
     }
 

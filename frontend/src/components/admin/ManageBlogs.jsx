@@ -36,6 +36,7 @@ const ManageBlogs = () => {
   const [loading, setLoading] = useState(false)
   const [imagePreview, setImagePreview] = useState(null)
   const [isOtherSelected, setIsOtherSelected] = useState(false)
+  const [deleteImageFlag, setDeleteImageFlag] = useState(false)
 
   const fetchBlogs = async () => {
     try {
@@ -54,10 +55,17 @@ const ManageBlogs = () => {
     const file = e.target.files[0]
     if (file) {
       setForm(prev => ({ ...prev, image: file }))
+      setDeleteImageFlag(false)
       const reader = new FileReader()
       reader.onloadend = () => setImagePreview(reader.result)
       reader.readAsDataURL(file)
     }
+  }
+
+  const handleRemoveImage = () => {
+    setImagePreview(null)
+    setForm(prev => ({ ...prev, image: null }))
+    setDeleteImageFlag(true)
   }
 
   const handleEdit = (blog) => {
@@ -75,6 +83,7 @@ const ManageBlogs = () => {
       is_published: blog.is_published,
       image: null
     })
+    setDeleteImageFlag(false)
     setImagePreview(blog.image_url)
     setShowForm(true)
   }
@@ -95,6 +104,7 @@ const ManageBlogs = () => {
       formData.append('tags', form.tags || '')
       formData.append('video_url', form.video_url || '')
       formData.append('is_published', form.is_published)
+      formData.append('delete_image', deleteImageFlag)
       
       if (form.image) {
         formData.append('image', form.image)
@@ -115,6 +125,7 @@ const ManageBlogs = () => {
       setForm(emptyForm)
       setIsOtherSelected(false)
       setImagePreview(null)
+      setDeleteImageFlag(false)
       setShowForm(false)
       setEditId(null)
       fetchBlogs()
@@ -163,6 +174,7 @@ const ManageBlogs = () => {
               setForm(emptyForm)
               setIsOtherSelected(false)
               setImagePreview(null)
+              setDeleteImageFlag(false)
               setEditId(null)
               setShowForm(true)
             }}
@@ -198,6 +210,7 @@ const ManageBlogs = () => {
               onClick={() => {
                 setShowForm(false)
                 setForm(emptyForm)
+                setDeleteImageFlag(false)
                 setEditId(null)
               }}
               style={{
@@ -324,20 +337,35 @@ const ManageBlogs = () => {
                 Cover Image
               </label>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                {imagePreview && (
-                  <div style={{ width: '80px', height: '60px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+                {imagePreview ? (
+                  <div style={{ position: 'relative', width: '80px', height: '60px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
                     <img src={imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      style={{
+                        position: 'absolute', top: '2px', right: '2px',
+                        background: 'rgba(239, 68, 68, 0.9)', color: '#fff', border: 'none',
+                        width: '18px', height: '18px', borderRadius: '50%',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer', fontSize: '10px', padding: 0
+                      }}
+                      title="Remove cover image"
+                    >
+                      <FiX size={10} />
+                    </button>
                   </div>
+                ) : (
+                  <label style={{
+                    display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    padding: '0.6rem 1.2rem', border: '2px dashed #cbd5e1',
+                    borderRadius: '10px', fontSize: '0.85rem', cursor: 'pointer',
+                    fontWeight: 600, color: '#64748b'
+                  }}>
+                    <FiUpload /> Upload Image
+                    <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
+                  </label>
                 )}
-                <label style={{
-                  display: 'flex', alignItems: 'center', gap: '0.5rem',
-                  padding: '0.6rem 1.2rem', border: '2px dashed #cbd5e1',
-                  borderRadius: '10px', fontSize: '0.85rem', cursor: 'pointer',
-                  fontWeight: 600, color: '#64748b'
-                }}>
-                  <FiUpload /> Upload Image
-                  <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
-                </label>
               </div>
             </div>
 
@@ -361,6 +389,7 @@ const ManageBlogs = () => {
                 onClick={() => {
                   setShowForm(false)
                   setForm(emptyForm)
+                  setDeleteImageFlag(false)
                   setEditId(null)
                 }}
                 style={{ background: '#f1f5f9', border: 'none', padding: '0.7rem 1.5rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
