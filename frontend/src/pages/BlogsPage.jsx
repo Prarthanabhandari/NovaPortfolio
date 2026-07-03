@@ -304,7 +304,6 @@ const BlogsPage = () => {
                           <div style={{
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'space-between',
                             flexWrap: 'wrap',
                             gap: '0.5rem'
                           }}>
@@ -327,34 +326,6 @@ const BlogsPage = () => {
                                   <FiVideo size={12} /> Video
                                 </span>
                               )}
-                            </div>
-
-                            {/* Toolbar Buttons */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                              <button
-                                onClick={(e) => handleLike(blog.id, e)}
-                                style={{
-                                  background: 'transparent',
-                                  border: 'none',
-                                  cursor: 'pointer',
-                                  color: hasLiked[blog.id] ? '#ef4444' : '#94a3b8',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '0.3rem',
-                                  fontSize: '0.8rem',
-                                  padding: '0.2rem',
-                                  borderRadius: '50%',
-                                  transition: 'color 0.2s'
-                                }}
-                              >
-                                <FiHeart size={14} fill={hasLiked[blog.id] ? '#ef4444' : 'transparent'} />
-                                <span>{getClapCount(blog.id)}</span>
-                              </button>
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: '#94a3b8', fontSize: '0.8rem' }}>
-                                <FiMessageSquare size={14} />
-                                <span>{getCommentCount(blog.id)}</span>
-                              </span>
-                              <FiBookmark size={14} style={{ color: '#94a3b8' }} />
                             </div>
                           </div>
                         </div>
