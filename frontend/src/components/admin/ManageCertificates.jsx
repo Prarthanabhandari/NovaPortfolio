@@ -278,60 +278,79 @@ const ManageCertificates = () => {
             </div>
           </div>
 
-          {/* Platform Picker */}
-          <div style={{ marginBottom: '1rem' }}>
+          {/* Platform Input & Picker */}
+          <div style={{ marginBottom: '1rem', position: 'relative' }}>
             <label style={{
               display: 'block', fontSize: '0.75rem', fontWeight: 600,
               color: '#64748b', marginBottom: '0.4rem', textTransform: 'uppercase'
             }}>
               Platform
             </label>
-            <button
-              onClick={() => setShowPlatformPicker(!showPlatformPicker)}
-              style={{
-                width: '100%', padding: '0.8rem',
-                border: '1px solid #e2e8f0', borderRadius: '10px',
-                background: '#f8fafc', color: '#0f172a',
-                textAlign: 'left', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: '0.5rem',
-                fontWeight: 600, fontSize: '0.9rem'
-              }}
-            >
-              {form.platform ? (
-                <>
-                  {platformIcons[form.platform]}
-                  {form.platform}
-                </>
-              ) : 'Choose a platform...'}
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <input
+                type="text"
+                placeholder="e.g., Udemy, Coursera, or custom platform"
+                value={form.platform}
+                onChange={e => setForm({ ...form, platform: e.target.value })}
+                onFocus={() => setShowPlatformPicker(true)}
+                style={{
+                  flex: 1, padding: '0.7rem 0.9rem',
+                  border: '1px solid #e2e8f0', borderRadius: '10px',
+                  fontSize: '0.85rem', background: '#f8fafc',
+                  color: '#0f172a', outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPlatformPicker(!showPlatformPicker)}
+                style={{
+                  padding: '0.7rem 1rem', border: '1px solid #e2e8f0',
+                  borderRadius: '10px', background: '#f1f5f9',
+                  color: '#64748b', fontSize: '0.85rem', cursor: 'pointer',
+                  fontWeight: 600
+                }}
+              >
+                {showPlatformPicker ? 'Hide Options' : 'Show Options'}
+              </button>
+            </div>
 
             {showPlatformPicker && (
               <div style={{
-                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '0.5rem', marginTop: '0.8rem',
-                border: '1px solid #e2e8f0', borderRadius: '10px',
-                padding: '1rem', background: '#f8fafc'
+                position: 'absolute', zIndex: 10, left: 0, right: 0,
+                marginTop: '0.4rem', border: '1px solid #e2e8f0',
+                borderRadius: '12px', padding: '1rem', background: '#fff',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
               }}>
-                {platformList.map((platform) => (
-                  <button
-                    key={platform}
-                    onClick={() => handleSelectPlatform(platform)}
-                    style={{
-                      display: 'flex', flexDirection: 'column',
-                      alignItems: 'center', gap: '0.4rem',
-                      padding: '0.8rem',
-                      borderRadius: '10px',
-                      border: form.platform === platform ? '2px solid #7c3aed' : '1px solid #e2e8f0',
-                      background: form.platform === platform ? 'rgba(124,58,237,0.1)' : '#fff',
-                      cursor: 'pointer',
-                      fontWeight: form.platform === platform ? 600 : 400,
-                      fontSize: '0.75rem', color: '#0f172a'
-                    }}
-                  >
-                    {platformIcons[platform]}
-                    {platform}
-                  </button>
-                ))}
+                <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '0.6rem' }}>
+                  Click to auto-fill common platforms:
+                </div>
+                <div style={{
+                  display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: '0.5rem'
+                }}>
+                  {platformList.map((platform) => (
+                    <button
+                      key={platform}
+                      type="button"
+                      onClick={() => handleSelectPlatform(platform)}
+                      style={{
+                        display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', gap: '0.4rem',
+                        padding: '0.8rem',
+                        borderRadius: '10px',
+                        border: form.platform === platform ? '2px solid #7c3aed' : '1px solid #e2e8f0',
+                        background: form.platform === platform ? 'rgba(124,58,237,0.1)' : '#fff',
+                        cursor: 'pointer',
+                        fontWeight: form.platform === platform ? 600 : 400,
+                        fontSize: '0.75rem', color: '#0f172a'
+                      }}
+                    >
+                      {platformIcons[platform]}
+                      {platform}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
