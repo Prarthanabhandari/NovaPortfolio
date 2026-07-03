@@ -46,7 +46,7 @@ const Hero = () => {
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #f8faff 0%, #eef2ff 50%, #f0f4ff 100%)',
         position: 'relative', overflow: 'hidden',
-        display: 'flex', alignItems: 'center',
+        display: 'flex', flexDirection: 'column', justifyContent: 'center',
         paddingTop: '80px'
       }}>
         {/* dots pattern */}
