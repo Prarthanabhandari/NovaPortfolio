@@ -4,7 +4,7 @@ import { Icon } from '@iconify/react'
 import api from '../services/api'
 import { useTheme } from '../context/ThemeContext'
 import { useNavigate } from 'react-router-dom'
-import { FiArrowLeft, FiClock, FiVideo, FiBookOpen } from 'react-icons/fi'
+import { FiArrowLeft, FiClock, FiVideo, FiSearch, FiHeart, FiMessageSquare, FiBookmark, FiTrendingUp } from 'react-icons/fi'
 import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
 import useWindowSize from '../hooks/useWindowSize'
@@ -17,8 +17,16 @@ const BlogsPage = () => {
   
   const [blogs, setBlogs] = useState([])
   const [loading, setLoading] = useState(true)
+  
+  // Filtering states
+  const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
+  const [activeTab, setActiveTab] = useState('for-you') // 'for-you' | 'featured'
   const [categories, setCategories] = useState(['All'])
+  
+  // Interactive claps (likes) state saved locally
+  const [claps, setClaps] = useState({})
+  const [hasLiked, setHasLiked] = useState({})
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -36,15 +44,62 @@ const BlogsPage = () => {
       }
     }
     fetchBlogs()
+
+    // Load claps state from localStorage
+    const savedClaps = localStorage.getItem('portfolio_blog_claps')
+    const savedLikes = localStorage.getItem('portfolio_blog_likes_state')
+    if (savedClaps) {
+      try { setClaps(JSON.parse(savedClaps)) } catch (e) {}
+    }
+    if (savedLikes) {
+      try { setHasLiked(JSON.parse(savedLikes)) } catch (e) {}
+    }
   }, [])
 
-  const filteredBlogs = selectedCategory === 'All' 
-    ? blogs 
-    : blogs.filter(b => b.category === selectedCategory)
+  // Handle claps interaction
+  const handleLike = (blogId, e) => {
+    e.stopPropagation()
+    const currentlyLiked = hasLiked[blogId]
+    const updatedLikes = { ...hasLiked, [blogId]: !currentlyLiked }
+    const updatedClaps = {
+      ...claps,
+      [blogId]: (claps[blogId] || 0) + (currentlyLiked ? -1 : 1)
+    }
+
+    setHasLiked(updatedLikes)
+    setClaps(updatedClaps)
+    localStorage.setItem('portfolio_blog_likes_state', JSON.stringify(updatedLikes))
+    localStorage.setItem('portfolio_blog_claps', JSON.stringify(updatedClaps))
+  }
+
+  // Generate deterministic baseline stats to make empty profiles look popular
+  const getClapCount = (blogId) => {
+    const base = (blogId * 13) % 47 + 15
+    const userOffset = claps[blogId] || 0
+    return base + userOffset
+  }
+
+  const getCommentCount = (blogId) => {
+    return (blogId * 7) % 11 + 2
+  }
+
+  // Filter logic
+  const filteredBlogs = blogs.filter(blog => {
+    const matchesCategory = selectedCategory === 'All' || blog.category === selectedCategory
+    const matchesSearch = blog.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (blog.summary && blog.summary.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                          (blog.tags && blog.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())))
+    const matchesTab = activeTab === 'for-you' || (activeTab === 'featured' && (blog.video_url || blog.id % 2 === 0))
+    
+    return matchesCategory && matchesSearch && matchesTab
+  })
+
+  // Popular / Staff Picks (top 3 posts)
+  const popularPicks = [...blogs].slice(0, 3)
 
   if (loading) {
     return (
-      <div style={{ padding: '4rem 2rem', textAlign: 'center', minHeight: '100vh' }}>
+      <div style={{ padding: '6rem 2rem', textAlign: 'center', minHeight: '100vh' }}>
         Loading articles...
       </div>
     )
@@ -54,294 +109,395 @@ const BlogsPage = () => {
     <>
       <Navbar />
       <div style={{
-        padding: isMobile ? '100px 1rem 40px' : '120px 2rem 80px',
-        background: isPro ? '#f8fafc' : 'linear-gradient(135deg, #fce4ec 0%, #f3e5f5 50%, #e8eaf6 100%)',
+        padding: isMobile ? '90px 1rem 40px' : '110px 2rem 80px',
+        background: isPro ? '#ffffff' : 'linear-gradient(135deg, #fdf4ff 0%, #f0f4ff 100%)',
         minHeight: '100vh',
-        overflow: 'hidden',
-        position: 'relative'
+        color: isPro ? '#0f172a' : '#1e1b4b'
       }}>
-        {/* Glow Spheres for Creative Theme */}
-        {!isPro && (
-          <>
-            <div style={{ position: 'absolute', top: '10%', left: '-10%', width: '400px', height: '400px', borderRadius: '50%', background: 'rgba(168,85,247,0.15)', filter: 'blur(100px)', zIndex: 0 }} />
-            <div style={{ position: 'absolute', bottom: '20%', right: '-10%', width: '350px', height: '350px', borderRadius: '50%', background: 'rgba(236,72,153,0.12)', filter: 'blur(80px)', zIndex: 0 }} />
-          </>
-        )}
-
-        <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           
-          {/* Back Navigation */}
-          <button
-            onClick={() => navigate('/')}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '0.5rem',
-              background: 'transparent', border: 'none',
-              color: isPro ? '#2563eb' : '#7c3aed',
-              fontWeight: 700, fontSize: '0.95rem',
-              cursor: 'pointer', marginBottom: '1.5rem',
-              outline: 'none'
-            }}
-          >
-            <FiArrowLeft size={18} /> Back to Home
-          </button>
-
-          {/* Unique Header Section */}
-          <div style={{ marginBottom: '3.5rem', textAlign: isMobile ? 'center' : 'left' }}>
-            <span style={{
-              display: 'inline-block',
-              background: isPro ? 'rgba(37,99,235,0.08)' : 'rgba(124,58,237,0.12)',
-              color: isPro ? '#2563eb' : '#7c3aed',
-              fontSize: '0.75rem', fontWeight: 800,
-              textTransform: 'uppercase', letterSpacing: '0.12em',
-              padding: '0.4rem 1.2rem', borderRadius: '2rem',
-              marginBottom: '1rem'
-            }}>
-              Blogs & Articles
-            </span>
-            <h1 style={{
-              fontSize: isMobile ? '2.5rem' : '3.8rem', fontWeight: 900,
-              color: isPro ? '#0f172a' : '#1e1b4b',
-              margin: '0 0 1rem 0',
-              lineHeight: 1.1,
-              letterSpacing: '-0.02em'
-            }}>
-              Tech <span style={{
-                background: isPro 
-                  ? 'linear-gradient(135deg, #2563eb, #7c3aed)' 
-                  : 'linear-gradient(135deg, #ff61d2, #a855f7)',
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
-              }}>Journal</span>
-            </h1>
-            <p style={{ fontSize: '1.1rem', color: '#64748b', maxWidth: '600px', margin: 0, lineHeight: 1.6 }}>
-              A collection of development stories, engineering guides, and video walk-throughs covering full-stack concepts, databases, and mobile applications.
-            </p>
-          </div>
-
-          {/* Interactive Tag Filters */}
-          <div style={{
-            display: 'flex', gap: '0.6rem',
-            overflowX: 'auto', paddingBottom: '1rem',
-            marginBottom: '3rem',
-            scrollbarWidth: 'none'
+          {/* Header */}
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            marginBottom: '2rem',
+            borderBottom: `1px solid ${isPro ? '#f1f5f9' : 'rgba(168,85,247,0.1)'}`,
+            paddingBottom: '1.5rem'
           }}>
-            {categories.map((cat) => (
+            <div>
               <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
+                onClick={() => navigate('/')}
                 style={{
-                  background: selectedCategory === cat
-                    ? (isPro ? '#2563eb' : 'linear-gradient(135deg, #a855f7, #ec4899)')
-                    : (isPro ? '#ffffff' : 'rgba(255, 255, 255, 0.6)'),
-                  color: selectedCategory === cat ? '#ffffff' : (isPro ? '#64748b' : '#6b21a8'),
-                  border: isPro 
-                    ? `1px solid ${selectedCategory === cat ? '#2563eb' : '#e2e8f0'}`
-                    : `1px solid ${selectedCategory === cat ? 'transparent' : 'rgba(255, 255, 255, 0.6)'}`,
-                  padding: '0.6rem 1.4rem',
-                  borderRadius: '2rem',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  boxShadow: selectedCategory === cat 
-                    ? '0 8px 20px rgba(168,85,247,0.15)' 
-                    : '0 2px 4px rgba(0,0,0,0.02)',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                  display: 'flex', alignItems: 'center', gap: '0.4rem',
+                  background: 'transparent', border: 'none',
+                  color: isPro ? '#2563eb' : '#c026d3',
+                  fontWeight: 700, fontSize: '0.85rem',
+                  cursor: 'pointer', marginBottom: '0.5rem',
+                  padding: 0
                 }}
               >
-                {cat}
+                <FiArrowLeft size={16} /> Back to Home
               </button>
-            ))}
+              <h1 style={{ 
+                fontSize: isMobile ? '1.8rem' : '2.4rem', 
+                fontWeight: 800, 
+                margin: 0,
+                fontFamily: 'serif' 
+              }}>
+                {isPro ? 'Engineering Journal' : 'Creative thoughts'}
+              </h1>
+            </div>
+            
+            {/* Search Input */}
+            <div style={{ position: 'relative', width: isMobile ? '140px' : '220px' }}>
+              <FiSearch style={{
+                position: 'absolute', left: '0.8rem', top: '50%',
+                transform: 'translateY(-50%)', color: '#94a3b8'
+              }} />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem 1rem 0.5rem 2.2rem',
+                  borderRadius: '2rem',
+                  border: `1px solid ${isPro ? '#e2e8f0' : 'rgba(168,85,247,0.2)'}`,
+                  background: isPro ? '#f8fafc' : 'rgba(255,255,255,0.7)',
+                  fontSize: '0.85rem',
+                  outline: 'none'
+                }}
+              />
+            </div>
           </div>
 
-          {/* Asymmetric Offset Layout Grid */}
-          {filteredBlogs.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '5rem 2rem', background: '#fff', borderRadius: '24px', border: '1px solid #e2e8f0' }}>
-              <span style={{ fontSize: '3rem' }}>📝</span>
-              <h3 style={{ margin: '1rem 0 0.5rem 0', color: '#0f172a' }}>No articles published yet</h3>
-              <p style={{ color: '#64748b', margin: 0 }}>Check back soon for software engineering walk-throughs!</p>
-            </div>
-          ) : (
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(12, 1fr)',
-              gap: isMobile ? '2rem' : '2.5rem'
-            }}>
-              {filteredBlogs.map((blog, i) => {
-                // Determine card shape span dynamically for an offset design
-                // i % 3 === 0: Featured card (span 8)
-                // i % 3 === 1: Narrow card (span 4)
-                // i % 3 === 2: Medium card (span 6)
-                const isFeatured = i % 3 === 0 && !isMobile
-                const isMedium = i % 3 === 2 && !isMobile
-                const gridSpan = isFeatured ? 'span 8' : (isMedium ? 'span 6' : 'span 4')
-                
-                // Estimate reading time (roughly 200 words/min)
-                const wordCount = blog.content ? blog.content.split(/\s+/).length : 50
-                const readTime = Math.max(1, Math.round(wordCount / 180))
+          {/* Grid Layout: Feed Left, Sidebar Right */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr' : '7fr 3.5fr',
+            gap: isMobile ? '2.5rem' : '4rem',
+            alignItems: 'start'
+          }}>
+            
+            {/* LEFT COLUMN: Feed */}
+            <div>
+              {/* Tabs */}
+              <div style={{
+                display: 'flex',
+                gap: '1.5rem',
+                borderBottom: '1px solid #e2e8f0',
+                marginBottom: '2rem',
+                fontSize: '0.9rem'
+              }}>
+                <button
+                  onClick={() => setActiveTab('for-you')}
+                  style={{
+                    padding: '0.6rem 0',
+                    border: 'none',
+                    background: 'transparent',
+                    borderBottom: activeTab === 'for-you' ? `2px solid ${isPro ? '#2563eb' : '#c026d3'}` : 'none',
+                    fontWeight: activeTab === 'for-you' ? 700 : 500,
+                    color: activeTab === 'for-you' ? (isPro ? '#2563eb' : '#c026d3') : '#64748b',
+                    cursor: 'pointer'
+                  }}
+                >
+                  For you
+                </button>
+                <button
+                  onClick={() => setActiveTab('featured')}
+                  style={{
+                    padding: '0.6rem 0',
+                    border: 'none',
+                    background: 'transparent',
+                    borderBottom: activeTab === 'featured' ? `2px solid ${isPro ? '#2563eb' : '#c026d3'}` : 'none',
+                    fontWeight: activeTab === 'featured' ? 700 : 500,
+                    color: activeTab === 'featured' ? (isPro ? '#2563eb' : '#c026d3') : '#64748b',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Featured
+                </button>
+              </div>
 
-                return (
-                  <motion.div
-                    key={blog.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: i * 0.1 }}
-                    whileHover={{ y: -8, boxShadow: '0 25px 50px rgba(0,0,0,0.08)' }}
-                    onClick={() => navigate(`/blogs/${blog.id}`)}
-                    style={{
-                      gridColumn: gridSpan,
-                      background: '#ffffff',
-                      borderRadius: '24px',
-                      overflow: 'hidden',
-                      cursor: 'pointer',
-                      border: isPro ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.7)',
-                      boxShadow: '0 8px 30px rgba(0,0,0,0.02)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      height: '100%',
-                      transition: 'all 0.3s ease'
-                    }}
-                  >
-                    {/* Cover image wrap */}
-                    <div style={{
-                      position: 'relative',
-                      height: isFeatured ? '320px' : '220px',
-                      width: '100%',
-                      overflow: 'hidden',
-                      background: '#f1f5f9'
-                    }}>
-                      {blog.image_url ? (
-                        <img
-                          src={blog.image_url}
-                          alt={blog.title}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            transition: 'transform 0.5s ease'
-                          }}
-                          onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                          onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-                        />
-                      ) : (
-                        <div style={{
-                          width: '100%', height: '100%',
-                          background: isPro ? 'linear-gradient(135deg, #e0f2fe, #dbeafe)' : 'linear-gradient(135deg, #f5d0fe, #e0e7ff)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center'
-                        }}>
-                          <span style={{ fontSize: '3rem' }}>✍️</span>
-                        </div>
-                      )}
-
-                      {/* Floating Badges */}
-                      <div style={{
-                        position: 'absolute', top: '1rem', left: '1rem',
-                        display: 'flex', gap: '0.5rem', zIndex: 2
-                      }}>
-                        <span style={{
-                          background: isPro ? '#0f172a' : 'rgba(124, 58, 237, 0.9)',
-                          color: '#ffffff',
-                          padding: '0.4rem 0.8rem',
-                          borderRadius: '8px',
-                          fontSize: '0.72rem',
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.04em'
-                        }}>
-                          {blog.category}
-                        </span>
-
-                        {blog.video_url && (
-                          <span style={{
-                            background: 'linear-gradient(135deg, #ef4444, #b91c1c)',
-                            color: '#ffffff',
-                            padding: '0.4rem 0.8rem',
-                            borderRadius: '8px',
-                            fontSize: '0.72rem',
-                            fontWeight: 700,
+              {/* Feed Articles */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+                {filteredBlogs.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '4rem 1rem', color: '#64748b' }}>
+                    <span style={{ fontSize: '2.5rem' }}>🔍</span>
+                    <h3 style={{ marginTop: '1rem', color: isPro ? '#0f172a' : '#1e1b4b' }}>No articles match your query</h3>
+                    <p style={{ fontSize: '0.85rem' }}>Try searching something else or switching categories.</p>
+                  </div>
+                ) : (
+                  filteredBlogs.map((blog) => {
+                    const wordCount = blog.content ? blog.content.split(/\s+/).length : 60
+                    const readTime = Math.max(1, Math.round(wordCount / 180))
+                    
+                    return (
+                      <article 
+                        key={blog.id}
+                        onClick={() => navigate(`/blogs/${blog.id}`)}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          gap: '1.5rem',
+                          paddingBottom: '2rem',
+                          borderBottom: '1px solid #f1f5f9',
+                          cursor: 'pointer',
+                          alignItems: 'flex-start'
+                        }}
+                      >
+                        {/* Feed Left: Content details */}
+                        <div style={{ flexGrow: 1, maxWidth: '75%' }}>
+                          
+                          {/* Author badge */}
+                          <div style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '0.3rem',
-                            boxShadow: '0 4px 12px rgba(239,68,68,0.3)'
+                            gap: '0.5rem',
+                            fontSize: '0.8rem',
+                            color: '#64748b',
+                            marginBottom: '0.6rem'
                           }}>
-                            <FiVideo size={12} /> Video
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Content Wrap */}
-                    <div style={{
-                      padding: '1.8rem',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      flexGrow: 1
-                    }}>
-                      {/* Meta Info */}
-                      <div style={{
-                        display: 'flex', alignItems: 'center', gap: '1rem',
-                        fontSize: '0.78rem', color: '#94a3b8',
-                        marginBottom: '0.8rem', fontWeight: 600
-                      }}>
-                        <span>{new Date(blog.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-                          <FiClock /> {readTime} min read
-                        </span>
-                      </div>
-
-                      {/* Title */}
-                      <h3 style={{
-                        fontSize: isFeatured ? '1.5rem' : '1.2rem',
-                        fontWeight: 800,
-                        color: '#0f172a',
-                        lineHeight: 1.3,
-                        margin: '0 0 0.8rem 0',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden'
-                      }}>
-                        {blog.title}
-                      </h3>
-
-                      {/* Summary */}
-                      <p style={{
-                        fontSize: '0.88rem',
-                        color: '#64748b',
-                        lineHeight: 1.6,
-                        margin: '0 0 1.5rem 0',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        flexGrow: 1
-                      }}>
-                        {blog.summary || (blog.content ? blog.content.substring(0, 150) + '...' : '')}
-                      </p>
-
-                      {/* Footer tags */}
-                      {blog.tags && blog.tags.length > 0 && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: 'auto' }}>
-                          {blog.tags.slice(0, 3).map((tag, idx) => (
-                            <span key={idx} style={{
-                              fontSize: '0.7rem',
-                              fontWeight: 700,
-                              background: '#f1f5f9',
-                              color: '#64748b',
-                              padding: '0.2rem 0.6rem',
-                              borderRadius: '6px'
+                            <div style={{
+                              width: '20px', height: '20px',
+                              borderRadius: '50%',
+                              background: isPro ? '#e2e8f0' : '#fbcfe8',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: '0.65rem', fontWeight: 800, color: isPro ? '#475569' : '#db2777'
                             }}>
-                              #{tag}
-                            </span>
-                          ))}
+                              P
+                            </div>
+                            <span style={{ fontWeight: 600, color: isPro ? '#334155' : '#4c1d95' }}>Prarthana Bhandari</span>
+                            <span>•</span>
+                            <span>{new Date(blog.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                          </div>
+
+                          {/* Title */}
+                          <h2 style={{
+                            fontSize: isMobile ? '1.1rem' : '1.35rem',
+                            fontWeight: 800,
+                            margin: '0 0 0.4rem 0',
+                            color: isPro ? '#0f172a' : '#1e1b4b',
+                            lineHeight: 1.3,
+                            fontFamily: 'sans-serif'
+                          }}>
+                            {blog.title}
+                          </h2>
+
+                          {/* Summary */}
+                          <p style={{
+                            fontSize: '0.88rem',
+                            color: isPro ? '#475569' : '#6b7280',
+                            lineHeight: 1.5,
+                            margin: '0 0 1rem 0',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden'
+                          }}>
+                            {blog.summary || (blog.content ? blog.content.substring(0, 120) + '...' : '')}
+                          </p>
+
+                          {/* Footer details row */}
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            flexWrap: 'wrap',
+                            gap: '0.5rem'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', fontSize: '0.78rem', color: '#94a3b8' }}>
+                              <span style={{
+                                background: isPro ? '#f1f5f9' : 'rgba(168,85,247,0.1)',
+                                color: isPro ? '#64748b' : '#a855f7',
+                                padding: '0.25rem 0.6rem',
+                                borderRadius: '1rem',
+                                fontWeight: 700,
+                                fontSize: '0.7rem'
+                              }}>
+                                {blog.category}
+                              </span>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
+                                <FiClock size={12} /> {readTime} min read
+                              </span>
+                              {blog.video_url && (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', color: '#ef4444' }}>
+                                  <FiVideo size={12} /> Video
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Toolbar Buttons */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                              <button
+                                onClick={(e) => handleLike(blog.id, e)}
+                                style={{
+                                  background: 'transparent',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  color: hasLiked[blog.id] ? '#ef4444' : '#94a3b8',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.3rem',
+                                  fontSize: '0.8rem',
+                                  padding: '0.2rem',
+                                  borderRadius: '50%',
+                                  transition: 'color 0.2s'
+                                }}
+                              >
+                                <FiHeart size={14} fill={hasLiked[blog.id] ? '#ef4444' : 'transparent'} />
+                                <span>{getClapCount(blog.id)}</span>
+                              </button>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: '#94a3b8', fontSize: '0.8rem' }}>
+                                <FiMessageSquare size={14} />
+                                <span>{getCommentCount(blog.id)}</span>
+                              </span>
+                              <FiBookmark size={14} style={{ color: '#94a3b8' }} />
+                            </div>
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  </motion.div>
-                )
-              })}
+
+                        {/* Feed Right: Cover Thumbnail image */}
+                        <div style={{
+                          width: isMobile ? '80px' : '110px',
+                          height: isMobile ? '80px' : '110px',
+                          borderRadius: '8px',
+                          overflow: 'hidden',
+                          flexShrink: 0,
+                          background: '#f1f5f9'
+                        }}>
+                          {blog.image_url ? (
+                            <img
+                              src={blog.image_url}
+                              alt={blog.title}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                          ) : (
+                            <div style={{
+                              width: '100%', height: '100%',
+                              background: isPro ? 'linear-gradient(135deg, #e0f2fe, #dbeafe)' : 'linear-gradient(135deg, #f5d0fe, #e0e7ff)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: '1.5rem'
+                            }}>
+                              ✍️
+                            </div>
+                          )}
+                        </div>
+
+                      </article>
+                    )
+                  })
+                )}
+              </div>
             </div>
-          )}
+
+            {/* RIGHT COLUMN: Sidebar (Hidden on mobile or stacks cleanly) */}
+            <div>
+              <div style={{ position: 'sticky', top: '100px', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+                
+                {/* Section 1: Staff Picks */}
+                <div>
+                  <h3 style={{
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    color: isPro ? '#0f172a' : '#7c3aed',
+                    marginBottom: '1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem'
+                  }}>
+                    <FiTrendingUp size={14} /> Popular Stories
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {popularPicks.map((pick) => (
+                      <div 
+                        key={pick.id}
+                        onClick={() => navigate(`/blogs/${pick.id}`)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: '#64748b', marginBottom: '0.2rem' }}>
+                          <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.5rem', fontWeight: 800, color: '#475569' }}>
+                            P
+                          </div>
+                          <span style={{ fontWeight: 600 }}>Prarthana Bhandari</span>
+                        </div>
+                        <h4 style={{
+                          fontSize: '0.88rem',
+                          fontWeight: 700,
+                          margin: 0,
+                          color: isPro ? '#1e293b' : '#3b0764',
+                          lineHeight: 1.3
+                        }}>
+                          {pick.title}
+                        </h4>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Section 2: Recommended Topics */}
+                <div>
+                  <h3 style={{
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    color: isPro ? '#0f172a' : '#7c3aed',
+                    marginBottom: '1rem'
+                  }}>
+                    Recommended Topics
+                  </h3>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    {categories.map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        style={{
+                          background: selectedCategory === cat
+                            ? (isPro ? '#0f172a' : '#7c3aed')
+                            : (isPro ? '#f1f5f9' : 'rgba(255,255,255,0.7)'),
+                          color: selectedCategory === cat ? '#ffffff' : (isPro ? '#475569' : '#6b21a8'),
+                          border: 'none',
+                          padding: '0.4rem 0.9rem',
+                          borderRadius: '2rem',
+                          fontWeight: 600,
+                          fontSize: '0.78rem',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Section 3: Footer small details */}
+                <div style={{
+                  borderTop: '1px solid #f1f5f9',
+                  paddingTop: '1rem',
+                  fontSize: '0.72rem',
+                  color: '#94a3b8',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '0.8rem'
+                }}>
+                  <span>Help</span>
+                  <span>Privacy</span>
+                  <span>Terms</span>
+                  <span>About</span>
+                  <span>© {new Date().getFullYear()} Journal</span>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
         </div>
       </div>
       <Footer />
