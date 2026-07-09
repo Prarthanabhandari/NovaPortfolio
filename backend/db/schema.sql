@@ -54,6 +54,8 @@ CREATE TABLE certificates (
   issued_date DATE,
   credential_url VARCHAR(255),
   image_url VARCHAR(255),
+  logo_url VARCHAR(255),
+  is_featured BOOLEAN DEFAULT false,
   created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -177,11 +179,11 @@ SET description = 'A full-stack book review and community platform featuring thr
 WHERE title = 'BookVerse - Book Review & Community Platform';
 
 -- Certificates
-INSERT INTO certificates (title, platform, description, issued_date, credential_url) VALUES
-('The Complete Full-Stack Web Development Bootcamp', 'Udemy', 'Full-stack course covering HTML, CSS, JavaScript, React, Node.js, Express, and Databases.', '2026-03-01', 'https://udemy.com'),
-('Machine Learning with Python', 'LinkedIn Learning', 'Covers foundational machine learning models, regression, classification, and clustering with Python.', '2026-01-01', 'https://linkedin.com'),
-('Core Java - Oracle Certified Associate', 'Oracle', 'Certified Java SE Programmer path covering types, controls, arrays, and OOP.', '2025-06-01', 'https://oracle.com'),
-('Data Science 360', 'Rubicon Foundation + Nasscom Foundation', 'Professional data science fundamentals, data processing, and analysis techniques.', '2025-03-01', 'https://nasscom.in');
+INSERT INTO certificates (title, platform, description, issued_date, credential_url, is_featured) VALUES
+('The Complete Full-Stack Web Development Bootcamp', 'Udemy', 'Full-stack course covering HTML, CSS, JavaScript, React, Node.js, Express, and Databases.', '2026-03-01', 'https://udemy.com', true),
+('Machine Learning with Python', 'LinkedIn Learning', 'Covers foundational machine learning models, regression, classification, and clustering with Python.', '2026-01-01', 'https://linkedin.com', true),
+('Core Java - Oracle Certified Associate', 'Oracle', 'Certified Java SE Programmer path covering types, controls, arrays, and OOP.', '2025-06-01', 'https://oracle.com', true),
+('Data Science 360', 'Rubicon Foundation + Nasscom Foundation', 'Professional data science fundamentals, data processing, and analysis techniques.', '2025-03-01', 'https://nasscom.in', true);
 
 -- Experience
 INSERT INTO experience (job_title, company, location, description, start_date, end_date, is_current, icon) VALUES
