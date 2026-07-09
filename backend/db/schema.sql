@@ -32,6 +32,7 @@ CREATE TABLE projects (
   is_featured BOOLEAN DEFAULT false,
   start_date DATE,
   end_date DATE,
+  images TEXT[] DEFAULT '{}',
   created_at TIMESTAMP DEFAULT NOW()
 );
 
