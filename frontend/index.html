@@ -4,7 +4,49 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <title>Prarthana Bhandari | Portfolio</title>
+    <script>
+      // Disable right-click context menu
+      document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+      // Disable copy events
+      document.addEventListener('copy', (e) => e.preventDefault());
+
+      // Disable drag and drop for images to prevent downloading
+      document.addEventListener('dragstart', (e) => {
+        if (e.target.tagName === 'IMG') {
+          e.preventDefault();
+        }
+      });
+
+      // Disable common inspect / copy shortcuts
+      document.addEventListener('keydown', (e) => {
+        // F12
+        if (e.key === 'F12') {
+          e.preventDefault();
+        }
+        // Ctrl+Shift+I (Developer Tools)
+        if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) {
+          e.preventDefault();
+        }
+        // Ctrl+Shift+C (Inspect Element)
+        if (e.ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c')) {
+          e.preventDefault();
+        }
+        // Ctrl+U (View Source)
+        if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
+          e.preventDefault();
+        }
+        // Ctrl+S (Save Page)
+        if (e.ctrlKey && (e.key === 'S' || e.key === 's')) {
+          e.preventDefault();
+        }
+        // Ctrl+P (Print Page)
+        if (e.ctrlKey && (e.key === 'P' || e.key === 'p')) {
+          e.preventDefault();
+        }
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>
