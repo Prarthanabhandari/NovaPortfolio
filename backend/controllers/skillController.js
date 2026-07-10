@@ -2,10 +2,11 @@ const pool = require('../config/db')
 
 const getAllSkills = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     const result = await pool.query('SELECT * FROM skills ORDER BY id DESC')
     const skills = result.rows.map(s => ({
       ...s,
-      image_url: s.image_url ? `http://localhost:5000${s.image_url}` : null
+      image_url: s.image_url ? `${host}${s.image_url}` : null
     }))
     res.json(skills)
   } catch (err) {
@@ -17,12 +18,13 @@ const getAllSkills = async (req, res) => {
 // NEW: Get only featured skills (for home page)
 const getFeaturedSkills = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     const result = await pool.query(
       'SELECT * FROM skills WHERE is_featured = true ORDER BY id DESC LIMIT 9'
     )
     const skills = result.rows.map(s => ({
       ...s,
-      image_url: s.image_url ? `http://localhost:5000${s.image_url}` : null
+      image_url: s.image_url ? `${host}${s.image_url}` : null
     }))
     res.json(skills)
   } catch (err) {
@@ -33,6 +35,7 @@ const getFeaturedSkills = async (req, res) => {
 
 const createSkill = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     console.log('📝 Creating skill - Body:', req.body)
     const { name, icon, description, proficiency_level, organization, is_featured } = req.body
     let image_url = null
@@ -49,7 +52,7 @@ const createSkill = async (req, res) => {
     console.log('✅ Skill created:', result.rows[0])
     res.status(201).json({
       ...result.rows[0],
-      image_url: image_url ? `http://localhost:5000${image_url}` : null
+      image_url: image_url ? `${host}${image_url}` : null
     })
   } catch (err) {
     console.error('❌ Error creating skill:', err.message)
@@ -59,6 +62,7 @@ const createSkill = async (req, res) => {
 
 const updateSkill = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     console.log('📝 Updating skill - Body:', req.body)
     const { id } = req.params
     const { name, icon, description, proficiency_level, organization, is_featured } = req.body
@@ -86,7 +90,7 @@ const updateSkill = async (req, res) => {
     console.log('✅ Skill updated:', result.rows[0])
     res.json({
       ...result.rows[0],
-      image_url: result.rows[0].image_url ? `http://localhost:5000${result.rows[0].image_url}` : null
+      image_url: result.rows[0].image_url ? `${host}${result.rows[0].image_url}` : null
     })
   } catch (err) {
     console.error('❌ Error updating skill:', err.message)

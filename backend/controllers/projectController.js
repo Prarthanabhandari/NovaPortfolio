@@ -17,12 +17,13 @@ const parseTechnologies = (tech) => {
 
 const getAllProjects = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     const result = await pool.query('SELECT * FROM projects ORDER BY start_date DESC')
     const projects = result.rows.map(p => ({
       ...p,
-      image_url: p.image_url ? `http://localhost:5000${p.image_url}` : null,
-      document_url: p.document_url ? `http://localhost:5000${p.document_url}` : null,
-      images: p.images ? p.images.map(img => `http://localhost:5000${img}`) : []
+      image_url: p.image_url ? `${host}${p.image_url}` : null,
+      document_url: p.document_url ? `${host}${p.document_url}` : null,
+      images: p.images ? p.images.map(img => `${host}${img}`) : []
     }))
     res.json(projects)
   } catch (err) {
@@ -34,14 +35,15 @@ const getAllProjects = async (req, res) => {
 // NEW: Featured projects only
 const getFeaturedProjects = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     const result = await pool.query(
       'SELECT * FROM projects WHERE is_featured = true ORDER BY start_date DESC LIMIT 6'
     )
     const projects = result.rows.map(p => ({
       ...p,
-      image_url: p.image_url ? `http://localhost:5000${p.image_url}` : null,
-      document_url: p.document_url ? `http://localhost:5000${p.document_url}` : null,
-      images: p.images ? p.images.map(img => `http://localhost:5000${img}`) : []
+      image_url: p.image_url ? `${host}${p.image_url}` : null,
+      document_url: p.document_url ? `${host}${p.document_url}` : null,
+      images: p.images ? p.images.map(img => `${host}${img}`) : []
     }))
     res.json(projects)
   } catch (err) {
@@ -52,6 +54,7 @@ const getFeaturedProjects = async (req, res) => {
 
 const createProject = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     console.log('📝 Creating project')
     const { title, description, technologies, start_date, end_date, achievements, live_link, github_link, is_featured } = req.body
     const techArray = parseTechnologies(technologies)
@@ -84,9 +87,9 @@ const createProject = async (req, res) => {
     console.log('✅ Project created:', result.rows[0])
     res.status(201).json({
       ...result.rows[0],
-      image_url: image_url ? `http://localhost:5000${image_url}` : null,
-      document_url: document_url ? `http://localhost:5000${document_url}` : null,
-      images: result.rows[0].images ? result.rows[0].images.map(img => `http://localhost:5000${img}`) : []
+      image_url: image_url ? `${host}${image_url}` : null,
+      document_url: document_url ? `${host}${document_url}` : null,
+      images: result.rows[0].images ? result.rows[0].images.map(img => `${host}${img}`) : []
     })
   } catch (err) {
     console.error('❌ Error creating project:', err.message)
@@ -96,6 +99,7 @@ const createProject = async (req, res) => {
 
 const updateProject = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     const { id } = req.params
     const { title, description, technologies, start_date, end_date, achievements, live_link, github_link, is_featured } = req.body
     const techArray = parseTechnologies(technologies)
@@ -114,8 +118,8 @@ const updateProject = async (req, res) => {
         }
       }
     }
-    // Clean domain prefix
-    images = images.map(img => img.replace('http://localhost:5000', ''))
+    // Clean domain prefix dynamically
+    images = images.map(img => img.replace(/^https?:\/\/[^\/]+/, ''))
 
     if (req.files) {
       if (req.files['image'] && req.files['image'][0]) {
@@ -155,9 +159,9 @@ const updateProject = async (req, res) => {
     const result = await pool.query(query, params)
     res.json({
       ...result.rows[0],
-      image_url: result.rows[0].image_url ? `http://localhost:5000${result.rows[0].image_url}` : null,
-      document_url: result.rows[0].document_url ? `http://localhost:5000${result.rows[0].document_url}` : null,
-      images: result.rows[0].images ? result.rows[0].images.map(img => `http://localhost:5000${img}`) : []
+      image_url: result.rows[0].image_url ? `${host}${result.rows[0].image_url}` : null,
+      document_url: result.rows[0].document_url ? `${host}${result.rows[0].document_url}` : null,
+      images: result.rows[0].images ? result.rows[0].images.map(img => `${host}${img}`) : []
     })
   } catch (err) {
     console.error('❌ Error updating project:', err.message)

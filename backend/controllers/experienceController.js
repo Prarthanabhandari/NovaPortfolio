@@ -2,12 +2,13 @@ const pool = require('../config/db')
 
 const getAllExperience = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     const result = await pool.query('SELECT * FROM experience ORDER BY start_date DESC')
     const experience = result.rows.map(e => ({
       ...e,
-      image_url: e.image_url ? `http://localhost:5000${e.image_url}` : null,
-      offer_letter: e.offer_letter ? `http://localhost:5000${e.offer_letter}` : null,
-      completion_certificate: e.completion_certificate ? `http://localhost:5000${e.completion_certificate}` : null
+      image_url: e.image_url ? `${host}${e.image_url}` : null,
+      offer_letter: e.offer_letter ? `${host}${e.offer_letter}` : null,
+      completion_certificate: e.completion_certificate ? `${host}${e.completion_certificate}` : null
     }))
     res.json(experience)
   } catch (err) {
@@ -18,6 +19,7 @@ const getAllExperience = async (req, res) => {
 
 const createExperience = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     console.log('📝 Creating experience - Body:', req.body)
     console.log('📝 Files:', req.files)
     const { job_title, company, location, description, start_date, end_date, is_current, icon } = req.body
@@ -34,9 +36,9 @@ const createExperience = async (req, res) => {
     console.log('✅ Experience created:', result.rows[0])
     res.status(201).json({
       ...result.rows[0],
-      image_url: image_url ? `http://localhost:5000${image_url}` : null,
-      offer_letter: offer_letter ? `http://localhost:5000${offer_letter}` : null,
-      completion_certificate: completion_certificate ? `http://localhost:5000${completion_certificate}` : null
+      image_url: image_url ? `${host}${image_url}` : null,
+      offer_letter: offer_letter ? `${host}${offer_letter}` : null,
+      completion_certificate: completion_certificate ? `${host}${completion_certificate}` : null
     })
   } catch (err) {
     console.error('❌ Error:', err.message)
@@ -46,6 +48,7 @@ const createExperience = async (req, res) => {
 
 const updateExperience = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     const { id } = req.params
     const { job_title, company, location, description, start_date, end_date, is_current, icon } = req.body
     
@@ -77,9 +80,9 @@ const updateExperience = async (req, res) => {
     const result = await pool.query(query, values)
     res.json({
       ...result.rows[0],
-      image_url: result.rows[0].image_url ? `http://localhost:5000${result.rows[0].image_url}` : null,
-      offer_letter: result.rows[0].offer_letter ? `http://localhost:5000${result.rows[0].offer_letter}` : null,
-      completion_certificate: result.rows[0].completion_certificate ? `http://localhost:5000${result.rows[0].completion_certificate}` : null
+      image_url: result.rows[0].image_url ? `${host}${result.rows[0].image_url}` : null,
+      offer_letter: result.rows[0].offer_letter ? `${host}${result.rows[0].offer_letter}` : null,
+      completion_certificate: result.rows[0].completion_certificate ? `${host}${result.rows[0].completion_certificate}` : null
     })
   } catch (err) {
     console.error('❌ Error:', err.message)

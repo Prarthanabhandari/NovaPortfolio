@@ -3,6 +3,7 @@ const pool = require('../config/db')
 // Get all blogs (Admin gets all, Public gets only published)
 exports.getAllBlogs = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     const isAdmin = req.query.admin === 'true'
     let queryStr = 'SELECT * FROM blogs WHERE is_published = true ORDER BY created_at DESC'
     
@@ -13,7 +14,7 @@ exports.getAllBlogs = async (req, res) => {
     const result = await pool.query(queryStr)
     const formatted = result.rows.map(b => ({
       ...b,
-      image_url: b.image_url ? `http://localhost:5000${b.image_url}` : null
+      image_url: b.image_url ? `${host}${b.image_url}` : null
     }))
     res.json(formatted)
   } catch (err) {
@@ -25,6 +26,7 @@ exports.getAllBlogs = async (req, res) => {
 // Get single blog post
 exports.getBlogById = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     const { id } = req.params
     const result = await pool.query('SELECT * FROM blogs WHERE id = $1', [id])
     
@@ -35,7 +37,7 @@ exports.getBlogById = async (req, res) => {
     const blog = result.rows[0]
     const formatted = {
       ...blog,
-      image_url: blog.image_url ? `http://localhost:5000${blog.image_url}` : null
+      image_url: blog.image_url ? `${host}${blog.image_url}` : null
     }
     res.json(formatted)
   } catch (err) {
@@ -47,6 +49,7 @@ exports.getBlogById = async (req, res) => {
 // Create new blog post
 exports.createBlog = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     const { title, content, summary, category, tags, video_url, is_published } = req.body
     
     let imageUrl = ''
@@ -80,7 +83,7 @@ exports.createBlog = async (req, res) => {
     const blog = result.rows[0]
     const formatted = {
       ...blog,
-      image_url: blog.image_url ? `http://localhost:5000${blog.image_url}` : null
+      image_url: blog.image_url ? `${host}${blog.image_url}` : null
     }
     res.status(201).json(formatted)
   } catch (err) {
@@ -92,6 +95,7 @@ exports.createBlog = async (req, res) => {
 // Update blog post
 exports.updateBlog = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     const { id } = req.params
     const { title, content, summary, category, tags, video_url, is_published } = req.body
 
@@ -137,7 +141,7 @@ exports.updateBlog = async (req, res) => {
     const blog = result.rows[0]
     const formatted = {
       ...blog,
-      image_url: blog.image_url ? `http://localhost:5000${blog.image_url}` : null
+      image_url: blog.image_url ? `${host}${blog.image_url}` : null
     }
     res.json(formatted)
   } catch (err) {

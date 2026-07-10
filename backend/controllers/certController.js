@@ -2,13 +2,14 @@ const pool = require('../config/db')
 
 const getAllCertificates = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     const result = await pool.query(
       'SELECT * FROM certificates ORDER BY issued_date DESC'
     )
     const certificates = result.rows.map(c => ({
       ...c,
-      image_url: c.image_url ? `http://localhost:5000${c.image_url}` : null,
-      logo_url: c.logo_url ? `http://localhost:5000${c.logo_url}` : null
+      image_url: c.image_url ? `${host}${c.image_url}` : null,
+      logo_url: c.logo_url ? `${host}${c.logo_url}` : null
     }))
     res.json(certificates)
   } catch (err) {
@@ -20,13 +21,14 @@ const getAllCertificates = async (req, res) => {
 // NEW: Get featured certificates (limit to 6)
 const getFeaturedCertificates = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     const result = await pool.query(
       'SELECT * FROM certificates WHERE is_featured = true ORDER BY issued_date DESC LIMIT 6'
     )
     const certificates = result.rows.map(c => ({
       ...c,
-      image_url: c.image_url ? `http://localhost:5000${c.image_url}` : null,
-      logo_url: c.logo_url ? `http://localhost:5000${c.logo_url}` : null
+      image_url: c.image_url ? `${host}${c.image_url}` : null,
+      logo_url: c.logo_url ? `${host}${c.logo_url}` : null
     }))
     res.json(certificates)
   } catch (err) {
@@ -37,6 +39,7 @@ const getFeaturedCertificates = async (req, res) => {
 
 const createCertificate = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     console.log('📝 Received request to create certificate')
     console.log('Body:', req.body)
     console.log('Files:', req.files)
@@ -55,8 +58,8 @@ const createCertificate = async (req, res) => {
 
     res.status(201).json({
       ...result.rows[0],
-      image_url: image_url ? `http://localhost:5000${image_url}` : null,
-      logo_url: logo_url ? `http://localhost:5000${logo_url}` : null
+      image_url: image_url ? `${host}${image_url}` : null,
+      logo_url: logo_url ? `${host}${logo_url}` : null
     })
   } catch (err) {
     console.error('❌ Error creating certificate:', err.message)
@@ -66,6 +69,7 @@ const createCertificate = async (req, res) => {
 
 const updateCertificate = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     console.log('📝 Received request to update certificate')
     const { id } = req.params
     const { title, platform, description, issued_date, credential_url, is_featured } = req.body
@@ -96,8 +100,8 @@ const updateCertificate = async (req, res) => {
     
     res.json({
       ...result.rows[0],
-      image_url: result.rows[0].image_url ? `http://localhost:5000${result.rows[0].image_url}` : null,
-      logo_url: result.rows[0].logo_url ? `http://localhost:5000${result.rows[0].logo_url}` : null
+      image_url: result.rows[0].image_url ? `${host}${result.rows[0].image_url}` : null,
+      logo_url: result.rows[0].logo_url ? `${host}${result.rows[0].logo_url}` : null
     })
   } catch (err) {
     console.error('❌ Error updating certificate:', err.message)

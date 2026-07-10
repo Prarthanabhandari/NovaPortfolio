@@ -2,12 +2,13 @@ const pool = require('../config/db')
 
 const getAllAchievements = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     const result = await pool.query(
       'SELECT * FROM achievements ORDER BY date_achieved DESC'
     )
     const achievements = result.rows.map(a => ({
       ...a,
-      image_url: a.image_url ? `http://localhost:5000${a.image_url}` : null
+      image_url: a.image_url ? `${host}${a.image_url}` : null
     }))
     res.json(achievements)
   } catch (err) {
@@ -18,6 +19,7 @@ const getAllAchievements = async (req, res) => {
 
 const createAchievement = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     console.log('📝 Creating achievement')
     const { title, description, category, date_achieved, icon } = req.body
     const image_url = req.file ? `/uploads/${req.file.filename}` : null
@@ -31,7 +33,7 @@ const createAchievement = async (req, res) => {
 
     res.status(201).json({
       ...result.rows[0],
-      image_url: image_url ? `http://localhost:5000${image_url}` : null
+      image_url: image_url ? `${host}${image_url}` : null
     })
   } catch (err) {
     console.error('❌ Error creating achievement:', err.message)
@@ -41,6 +43,7 @@ const createAchievement = async (req, res) => {
 
 const updateAchievement = async (req, res) => {
   try {
+    const host = req.protocol + '://' + req.get('host')
     console.log('📝 Updating achievement')
     const { id } = req.params
     const { title, description, category, date_achieved, icon } = req.body
@@ -64,7 +67,7 @@ const updateAchievement = async (req, res) => {
     
     res.json({
       ...result.rows[0],
-      image_url: result.rows[0].image_url ? `http://localhost:5000${result.rows[0].image_url}` : null
+      image_url: result.rows[0].image_url ? `${host}${result.rows[0].image_url}` : null
     })
   } catch (err) {
     console.error('❌ Error updating achievement:', err.message)
